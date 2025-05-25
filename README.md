@@ -1,223 +1,297 @@
-# Anki Bot Project Structure
+# 🎯 Anki Telegram Bot
 
-```
-anki_bot/
-├── .env.example
-├── requirements.txt
-├── main.py
-├── config.py
-├── anki_client.py
-├── card_generator.py
-├── validators.py
-├── handlers/
-│   ├── __init__.py
-│   ├── commands.py
-│   └── messages.py
-└── utils/
-    ├── __init__.py
-    ├── spell_checker.py
-    └── session_manager.py
-```
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Telegram Bot API](https://img.shields.io/badge/Telegram%20Bot%20API-20.0+-blue.svg)](https://python-telegram-bot.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Setup Instructions
+A powerful Telegram bot that automatically generates high-quality Anki flashcards from English words. Simply send a word, and the bot creates a comprehensive flashcard with Ukrainian translations, IPA pronunciations, explanations, and example sentences.
 
-1. Clone the project
-2. Copy `.env.example` to `.env` and fill in your tokens
-3. Install dependencies: `pip install -r requirements.txt`
-4. Run: `python main.py`
+## ✨ Features
 
+### 🚀 Core Functionality
+- **Instant Flashcard Generation**: Send any English word to create a detailed Anki card
+- **AI-Powered Content**: Uses Ollama (Gemma2:9b) for intelligent card generation
+- **Quality Assurance**: Multi-attempt generation with validation and merging for best results
+- **Auto-Sync**: Automatically syncs your Anki collection after adding cards
 
+### 📝 Card Content
+Each flashcard includes:
+- 🌐 **Ukrainian Translations** with part of speech
+- 🔊 **IPA Pronunciation** (British & American)
+- 📖 **Detailed Explanations** in English and Ukrainian
+- 💡 **Example Sentences** with translations
+- 🏷️ **Part of Speech** classification
 
+### 🛡️ Security Features
+- **Single-User Authentication**: Secure access with authentication code
+- **Access Control**: Only one authorized user at a time
+- **Security Logging**: Track all unauthorized access attempts
+- **Admin Commands**: Monitor and manage security status
 
-# Anki Bot Security Setup Guide
+### 🔧 Smart Features
+- **Spell Checking**: Automatic spell correction with suggestions
+- **Duplicate Detection**: Prevents adding existing words
+- **Session Management**: Maintains user state and preferences
+- **Error Recovery**: Robust error handling and retry logic
 
-This guide explains how to set up and use the single-user security system for your Anki Telegram Bot.
+## 📋 Prerequisites
 
-## Overview
+- Python 3.8 or higher
+- [Anki](https://apps.ankiweb.net/) desktop application
+- [AnkiConnect](https://ankiweb.net/shared/info/2055492159) add-on installed
+- [Ollama](https://ollama.ai/) with Gemma2:9b model
+- Telegram Bot Token (from [@BotFather](https://t.me/botfather))
 
-The security system ensures that only one authorized user can access and use the bot. It includes:
+## 🚀 Quick Start
 
-- **Authentication via secure code**: Users must provide a valid auth code to gain access
-- **Single user restriction**: Only one user can be authorized at a time
-- **Security logging**: All unauthorized access attempts are logged
-- **Admin commands**: The authorized user can view security status and revoke access
-
-## Initial Setup
-
-### 1. Generate a Secure Authentication Code
-
-Create a strong, unique authentication code. You can generate one using:
-
+### 1. Clone the Repository
 ```bash
-# Generate a 32-character random code
+git clone https://github.com/yourusername/anki-bot.git
+cd anki-bot
+```
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Set Up Ollama
+```bash
+# Install Ollama (if not already installed)
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Pull the Gemma2:9b model
+ollama pull gemma2:9b
+
+# Start Ollama service
+ollama serve
+```
+
+### 4. Configure AnkiConnect
+1. Open Anki
+2. Go to Tools → Add-ons → Get Add-ons
+3. Enter code: `2055492159`
+4. Restart Anki
+
+### 5. Configure Environment
+```bash
+# Copy example environment file
+cp env.example .env
+
+# Edit .env with your settings
+vim .env  # or use your preferred editor
+```
+
+Required environment variables:
+```env
+# Telegram Bot Token (required)
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+
+# Security (required)
+AUTH_CODE=your_secure_authentication_code_here
+
+# Optional: Pre-authorize a user
+AUTHORIZED_USER_ID=
+
+# Ollama settings
+OLLAMA_MODEL=gemma2:9b
+OLLAMA_URL=http://localhost:11434/api/generate
+
+# Anki settings
+ANKI_DECK_NAME=Default
+```
+
+### 6. Generate Secure Auth Code
+```bash
+# Generate a secure 32-character code
 openssl rand -hex 16
 
 # Or use Python
 python -c "import secrets; print(secrets.token_urlsafe(24))"
 ```
 
-### 2. Configure Environment Variables
-
-Update your `.env` file with security settings:
-
-```env
-# Required: Your secure authentication code
-AUTH_CODE=your_generated_secure_code_here
-
-# Optional: Pre-authorize a specific Telegram user ID
-# Leave empty to require authentication on first use
-AUTHORIZED_USER_ID=
-
-# Enable security logging (recommended)
-ENABLE_SECURITY_LOGS=true
-
-# Maximum failed auth attempts
-MAX_AUTH_ATTEMPTS=3
-```
-
-### 3. Update Your Code
-
-Replace the following files with the secure versions:
-
-1. Add `security_middleware.py` to your project root
-2. Replace `main.py` with the secure version (`secure_main.py`)
-3. Update `config.py` to include security settings
-
-### 4. Deploy the Bot
-
-Start the bot as usual:
-
+### 7. Start the Bot
 ```bash
 python main.py
 ```
 
-## Usage
+## 📱 Usage
 
-### First-Time Authentication
-
-When a user first interacts with the bot:
-
-1. They will receive an "Unauthorized Access" message
-2. They must authenticate using: `/start YOUR_AUTH_CODE`
-3. Once authenticated, their Telegram user ID is stored as the authorized user
+### First-Time Setup
+1. Start a chat with your bot on Telegram
+2. Authenticate with: `/start YOUR_AUTH_CODE`
+3. The bot will confirm successful authentication
 
 ### Daily Usage
 
-After authentication:
-- The authorized user can use all bot commands normally
-- No re-authentication needed unless access is revoked
-- All commands work as before, but only for the authorized user
+#### Adding Words
+Simply send any English word:
+```
+philosophy
+```
 
-### Security Commands
+The bot will:
+1. Check spelling (suggest corrections if needed)
+2. Verify the word doesn't already exist
+3. Generate a comprehensive flashcard
+4. Add it to your Anki deck
+5. Auto-sync your collection
 
-The authorized user has access to these security commands:
+#### Available Commands
+- `/start` - Initialize bot and start Anki
+- `/sync` - Manually sync Anki collection
+- `/stats` - View deck statistics
+- `/security` - Check security status
+- `/help` - Show help message
 
+### Spell Correction Flow
+When you send a misspelled word:
+```
+User: recieve
+Bot: 🔍 Did you mean receive instead of 'recieve'?
+
+Reply with:
+• yes - to use 'receive'
+• no - to keep 'recieve'
+• cancel - to cancel
+
+User: yes
+Bot: ✅ Using corrected word: receive
+```
+
+## 🏗️ Project Structure
+
+```
+anki_bot/
+├── main.py                 # Entry point with security
+├── config.py               # Configuration management
+├── anki_client.py          # AnkiConnect API wrapper
+├── card_generator.py       # AI-powered card generation
+├── validators.py           # Content validation logic
+├── security_middleware.py  # Authentication & security
+├── handlers/
+│   ├── commands.py         # Command handlers
+│   └── messages.py         # Message processing
+└── utils/
+    ├── spell_checker.py    # Advanced spell checking
+    └── session_manager.py  # User session management
+```
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `TELEGRAM_BOT_TOKEN` | Your Telegram bot token | - | ✅ |
+| `AUTH_CODE` | Secure authentication code | - | ✅ |
+| `AUTHORIZED_USER_ID` | Pre-authorized Telegram user ID | - | ❌ |
+| `OLLAMA_MODEL` | Ollama model to use | `gemma2:9b` | ❌ |
+| `OLLAMA_URL` | Ollama API endpoint | `http://localhost:11434/api/generate` | ❌ |
+| `ANKI_DECK_NAME` | Target Anki deck | `Default` | ❌ |
+| `MAX_GENERATION_ATTEMPTS` | Max card generation retries | `4` | ❌ |
+| `LOG_LEVEL` | Logging verbosity | `INFO` | ❌ |
+
+### Customization Options
+
+#### Change Ollama Model
+```env
+# Use a different model
+OLLAMA_MODEL=llama2:13b
+```
+
+#### Target Different Deck
+```env
+# Use custom deck name
+ANKI_DECK_NAME=English Vocabulary
+```
+
+#### Adjust Timeouts
+```env
+GENERATION_TIMEOUT=90
+SYNC_TIMEOUT=45
+SPELL_CHECK_TIMEOUT=30
+```
+
+## 🔒 Security
+
+### Authentication Flow
+1. Bot starts without authorized user
+2. First user must authenticate with auth code
+3. User ID is stored as the only authorized user
+4. All other users receive "Unauthorized Access" message
+
+### Security Commands (Authorized User Only)
 - `/security` - View current security status and unauthorized attempts
-- `/revoke` - Revoke own access (requires confirmation)
+- `/revoke` - Revoke your own access (requires confirmation)
 - `/confirm_revoke` - Confirm access revocation
 
-### Handling Unauthorized Access
+### Best Practices
+- Use a strong, random authentication code (minimum 16 characters)
+- Never commit your auth code to version control
+- Regularly check unauthorized access attempts
+- Rotate auth codes periodically
+- Keep your server and dependencies updated
 
-When unauthorized users try to use the bot:
-1. They receive an "Unauthorized Access" message
-2. The attempt is logged with timestamp and user info
-3. The authorized user can view these attempts via `/security`
+## 🐛 Troubleshooting
 
-## Security Best Practices
+### Common Issues
 
-### 1. Protect Your Auth Code
+#### "Anki is not running"
+```bash
+# Make sure Anki is installed
+which anki
 
-- **Never** commit the auth code to version control
-- Use environment variables or secure key management
-- Rotate the code periodically
-- Use a strong, random code (minimum 16 characters)
+# Start Anki manually
+anki &
 
-### 2. Monitor Access Attempts
-
-Regularly check unauthorized access attempts:
-
-```
-/security
-```
-
-This shows:
-- Current authorized user ID
-- Number of unauthorized attempts
-- Recent attempt details
-
-### 3. Secure Deployment
-
-When deploying your bot:
-
-- Use HTTPS for all communications
-- Keep your server/VPS secure and updated
-- Use a process manager (like systemd) with proper permissions
-- Consider using Docker for isolation
-
-### 4. Backup Considerations
-
-- The authorized user ID is stored in memory
-- If the bot restarts without `AUTHORIZED_USER_ID` set, re-authentication is required
-- Consider persisting the authorized user ID securely if needed
-
-## Troubleshooting
-
-### "No authorized user configured yet"
-
-This means no one has authenticated yet. Use:
-```
-/start YOUR_AUTH_CODE
+# Or let the bot start it
+/start
 ```
 
-### "Invalid authentication code"
+#### "Failed to connect to Ollama"
+```bash
+# Check if Ollama is running
+curl http://localhost:11434/api/tags
 
-- Check that your auth code matches exactly (case-sensitive)
-- Ensure the `AUTH_CODE` environment variable is set correctly
+# Start Ollama
+ollama serve
+```
+
+#### "AnkiConnect error"
+1. Ensure AnkiConnect add-on is installed
+2. Check Anki → Tools → Add-ons → AnkiConnect → Config
+3. Verify `http://localhost:8765` is accessible
+
+#### Authentication Issues
+- Verify `AUTH_CODE` in `.env` matches exactly (case-sensitive)
 - Check for trailing spaces or special characters
+- Ensure the bot was restarted after changing `.env`
 
-### Lost Access
-
-If you lose access (e.g., changed Telegram account):
-
-1. Stop the bot
-2. Clear the `AUTHORIZED_USER_ID` in `.env`
-3. Restart the bot
-4. Authenticate again with the auth code
-
-### Security Logs
-
-To enable detailed security logging:
-
+### Debug Mode
+Enable detailed logging:
 ```env
 LOG_LEVEL=DEBUG
 ENABLE_SECURITY_LOGS=true
 ```
 
-## Advanced Configuration
+## 🚀 Advanced Usage
 
-### Pre-Authorizing a User
+### Pre-Authorizing Users
+If you know your Telegram user ID:
+```env
+# Get your ID from @userinfobot
+AUTHORIZED_USER_ID=123456789
+```
 
-If you know your Telegram user ID, you can pre-authorize it:
+### Custom Card Format
+Modify `card_generator.py` to customize the flashcard format:
+```python
+# In format_for_anki() method
+formatted_content = f"""<your custom HTML template>"""
+```
 
-1. Get your Telegram user ID (send any message to @userinfobot)
-2. Add to `.env`:
-   ```env
-   AUTHORIZED_USER_ID=123456789
-   ```
-3. Restart the bot
-
-### Changing the Auth Code
-
-To change the authentication code:
-
-1. Update `AUTH_CODE` in `.env`
-2. The current authorized user remains authorized
-3. New authentications will require the new code
-
-### Multiple Environment Support
-
-For different environments (dev/prod):
-
+### Multiple Environments
 ```bash
 # Development
 cp .env.dev .env
@@ -228,73 +302,45 @@ cp .env.prod .env
 python main.py
 ```
 
-## Security Considerations
+### Docker Deployment (Coming Soon)
+```dockerfile
+# Dockerfile example
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["python", "main.py"]
+```
 
-### What This Protects Against
+## 🤝 Contributing
 
-- ✅ Unauthorized users accessing your bot
-- ✅ Multiple users using the bot simultaneously
-- ✅ Unauthorized command execution
-- ✅ Access attempt tracking
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-### What This Doesn't Protect Against
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-- ❌ Man-in-the-middle attacks (use HTTPS)
-- ❌ Telegram account compromise
-- ❌ Server-level security breaches
-- ❌ Auth code exposure through logs
+## 📝 License
 
-### Additional Security Measures
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Consider implementing:
+## 🙏 Acknowledgments
 
-1. **Rate limiting**: Limit authentication attempts per IP/user
-2. **IP whitelisting**: Restrict bot access to specific IPs
-3. **Two-factor authentication**: Require additional verification
-4. **Audit logging**: Log all bot actions for compliance
+- [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) for the excellent Telegram Bot API wrapper
+- [AnkiConnect](https://github.com/FooSoft/anki-connect) for enabling Anki automation
+- [Ollama](https://ollama.ai/) for providing local LLM capabilities
+- [Anki](https://apps.ankiweb.net/) for the amazing spaced repetition software
 
-## Example Workflow
+## 📧 Support
 
-1. **Initial Setup**
-   ```bash
-   # Generate auth code
-   AUTH_CODE=$(openssl rand -hex 16)
-   echo "AUTH_CODE=$AUTH_CODE" >> .env
+If you encounter any issues or have questions:
+1. Check the [Troubleshooting](#-troubleshooting) section
+2. Search existing [Issues](https://github.com/yourusername/anki-bot/issues)
+3. Create a new issue with detailed information
 
-   # Start bot
-   python main.py
-   ```
+---
 
-2. **First Authentication**
-   ```
-   User: /start
-   Bot: 🚫 Unauthorized Access...
-
-   User: /start abc123def456...
-   Bot: ✅ Authentication successful!
-   ```
-
-3. **Normal Usage**
-   ```
-   User: philosophy
-   Bot: 🔄 Generating flashcard...
-   ```
-
-4. **Security Check**
-   ```
-   User: /security
-   Bot: 🔒 Security Status
-        Authorized User ID: 123456789
-        Unauthorized Attempts: 2
-   ```
-
-## Conclusion
-
-This security system provides a simple but effective way to restrict your Anki bot to a single authorized user. Remember to:
-
-- Keep your auth code secure
-- Monitor unauthorized attempts
-- Update your code regularly
-- Follow security best practices
-
-For additional security needs or multi-user support, consider implementing a more robust authentication system with database storage and role-based access control.
+<p align="center">Made with ❤️ for language learners</p>
