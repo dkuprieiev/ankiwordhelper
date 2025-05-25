@@ -6,6 +6,7 @@ from telegram.ext import ContextTypes
 
 from anki_client import AnkiClient
 from utils import SessionManager
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Commands:\n"
             "/sync - Sync your Anki collection\n"
             "/stats - View deck statistics\n"
+            "/debug - Show debug information\n"
             "/help - Show this help message"
         )
     else:
@@ -98,6 +100,58 @@ Send me more words to add to your collection!"""
     await update.message.reply_text(message, parse_mode='Markdown')
 
 
+async def debug_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /debug command to show current configuration."""
+    await update.message.reply_text("Debug command received!")  # ADD THIS
+    user_id = update.effective_user.id
+    logger.info(f"Debug command from user {user_id}")
+
+    anki_client: AnkiClient = context.bot_data['anki_client']
+
+    # Initialize variables
+    available_decks = []
+    test_notes = []
+    test_query = f'deck:"{anki_client.deck_name}"'
+
+    # Test deck search
+    if anki_client.ensure_running():
+        # Try to get deck info
+        deck_names_result = anki_client._make_request("deckNames")
+        available_decks = deck_names_result.get("result", []) if "result" in deck_names_result else []
+
+        # Try a simple search in the configured deck
+        test_notes = anki_client.find_notes(test_query)
+
+    # Get current configuration
+    debug_info = f"""🔧 **Debug Information**
+
+**Anki Configuration:**
+- URL: `{anki_client.url}`
+- Deck Name: `{anki_client.deck_name}`
+- Deck Name (repr): `{repr(anki_client.deck_name)}`
+- Model Name: `{anki_client.model_name}`
+- Anki Running: {anki_client.is_running()}
+
+**Available Decks:**
+{chr(10).join(f"- {deck}" for deck in available_decks[:10]) if available_decks else "Failed to retrieve decks"}
+
+**Test Search Results:**
+- Query: `{test_query}`
+- Notes found: {len(test_notes)}
+
+**Bot Configuration:**
+- Max Generation Attempts: {settings.max_generation_attempts}
+- Ollama Model: {settings.ollama_model}
+- Log Level: {settings.log_level}
+
+**Environment Check:**
+- ANKI_DECK_NAME from env: `{repr(settings.anki_deck_name)}`
+
+Send me a word to test the duplicate detection!"""
+
+    await update.message.reply_text(debug_info, parse_mode='Markdown')
+
+
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /help command."""
     help_text = """🤖 **Anki Vocabulary Bot Help**
@@ -119,6 +173,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 /start - Start Anki and initialize bot
 /sync - Manually sync Anki collection
 /stats - View deck statistics
+/debug - Show debug information
 /help - Show this help message
 
 **Tips:**

@@ -44,18 +44,103 @@ Each flashcard includes:
 
 ## 🚀 Quick Start
 
-### 1. Clone the Repository
+You can run the bot either using Docker (recommended) or manually.
+
+### 🐳 Option 1: Docker (Recommended)
+
+#### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+- Telegram Bot Token (from [@BotFather](https://t.me/botfather))
+
+#### Steps
+
+1. **Clone the Repository**
 ```bash
 git clone https://github.com/yourusername/anki-bot.git
 cd anki-bot
 ```
 
-### 2. Install Dependencies
+2. **Configure Environment**
+```bash
+# Copy example environment file
+cp env.example .env
+
+# Edit .env with your settings
+vim .env  # or use your preferred editor
+```
+
+3. **Generate Secure Auth Code**
+```bash
+# Generate a secure authentication code
+make auth-code
+# Or manually:
+openssl rand -hex 16
+```
+
+4. **Start with Docker**
+```bash
+# Build and start all services
+make up
+
+# Or using docker-compose directly
+docker-compose up -d
+
+# View logs to get auth code if not set
+make logs-bot
+```
+
+5. **Pull Ollama Model** (first time only)
+```bash
+make pull-model
+```
+
+The bot will automatically:
+- Start Ollama service
+- Pull the Gemma2:9b model
+- Start Anki with AnkiConnect
+- Start the Telegram bot
+
+#### Useful Docker Commands
+```bash
+# View logs
+make logs          # All services
+make logs-bot      # Bot only
+
+# Restart services
+make restart
+
+# Stop services
+make down
+
+# Clean everything (including data)
+make clean
+
+# Development mode with hot reload
+make dev
+```
+
+### 💻 Option 2: Manual Installation
+
+#### Prerequisites
+- Python 3.8+
+- [Anki](https://apps.ankiweb.net/) desktop application
+- [AnkiConnect](https://ankiweb.net/shared/info/2055492159) add-on
+- [Ollama](https://ollama.ai/)
+
+#### Steps
+
+1. **Clone the Repository**
+```bash
+git clone https://github.com/yourusername/anki-bot.git
+cd anki-bot
+```
+
+2. **Install Dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Set Up Ollama
+3. **Set Up Ollama**
 ```bash
 # Install Ollama (if not already installed)
 curl -fsSL https://ollama.ai/install.sh | sh
@@ -67,13 +152,13 @@ ollama pull gemma2:9b
 ollama serve
 ```
 
-### 4. Configure AnkiConnect
-1. Open Anki
-2. Go to Tools → Add-ons → Get Add-ons
-3. Enter code: `2055492159`
-4. Restart Anki
+4. **Configure AnkiConnect**
+   - Open Anki
+   - Go to Tools → Add-ons → Get Add-ons
+   - Enter code: `2055492159`
+   - Restart Anki
 
-### 5. Configure Environment
+5. **Configure Environment**
 ```bash
 # Copy example environment file
 cp env.example .env
@@ -82,7 +167,13 @@ cp env.example .env
 vim .env  # or use your preferred editor
 ```
 
-Required environment variables:
+6. **Start the Bot**
+```bash
+python main.py
+```
+
+### 📋 Required Environment Variables
+
 ```env
 # Telegram Bot Token (required)
 TELEGRAM_BOT_TOKEN=your_bot_token_here
@@ -93,26 +184,12 @@ AUTH_CODE=your_secure_authentication_code_here
 # Optional: Pre-authorize a user
 AUTHORIZED_USER_ID=
 
-# Ollama settings
+# Ollama settings (Docker will override these)
 OLLAMA_MODEL=gemma2:9b
 OLLAMA_URL=http://localhost:11434/api/generate
 
 # Anki settings
 ANKI_DECK_NAME=Default
-```
-
-### 6. Generate Secure Auth Code
-```bash
-# Generate a secure 32-character code
-openssl rand -hex 16
-
-# Or use Python
-python -c "import secrets; print(secrets.token_urlsafe(24))"
-```
-
-### 7. Start the Bot
-```bash
-python main.py
 ```
 
 ## 📱 Usage
@@ -300,17 +377,6 @@ python main.py
 # Production
 cp .env.prod .env
 python main.py
-```
-
-### Docker Deployment (Coming Soon)
-```dockerfile
-# Dockerfile example
-FROM python:3.9-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["python", "main.py"]
 ```
 
 ## 🤝 Contributing

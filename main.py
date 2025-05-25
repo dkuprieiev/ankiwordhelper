@@ -24,9 +24,10 @@ from security_middleware import (
 from handlers import (
     sync_command,
     stats_command,
-    handle_text_message
+    handle_text_message,
+    help_command,
+    debug_command
 )
-from handlers.commands import help_command
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,6 @@ async def start_anki_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "Please make sure Anki is installed and try again."
             )
 
-
 # Create secured versions of all handlers
 def create_secured_handlers(security_middleware: SecurityMiddleware):
     """Create all handlers with security decorators."""
@@ -125,6 +125,7 @@ def create_secured_handlers(security_middleware: SecurityMiddleware):
     secure_sync = require_authorization(security_middleware)(sync_command)
     secure_stats = require_authorization(security_middleware)(stats_command)
     secure_help = require_authorization(security_middleware)(help_command)
+    secure_debug = require_authorization(security_middleware)(debug_command)
     secure_message = require_authorization(security_middleware)(handle_text_message)
 
     # Create admin commands
@@ -137,12 +138,12 @@ def create_secured_handlers(security_middleware: SecurityMiddleware):
         'sync': secure_sync,
         'stats': secure_stats,
         'help': secure_help,
+        'debug': secure_debug,
         'message': secure_message,
         'security': secure_security_status,
         'revoke': secure_revoke,
         'confirm_revoke': secure_confirm_revoke
     }
-
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle errors in the bot."""
@@ -227,6 +228,7 @@ def main():
     application.add_handler(CommandHandler("stats", secured_handlers['stats']))
     application.add_handler(CommandHandler("security", secured_handlers['security']))
     application.add_handler(CommandHandler("help", secured_handlers['help']))
+    application.add_handler(CommandHandler("debug", secured_handlers['debug']))
     application.add_handler(CommandHandler("revoke", secured_handlers['revoke']))
     application.add_handler(CommandHandler("confirm_revoke", secured_handlers['confirm_revoke']))
     application.add_handler(

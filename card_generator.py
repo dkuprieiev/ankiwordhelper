@@ -269,16 +269,12 @@ Do not use any markdown formatting."""
         # Format for Anki HTML
         formatted_content = f"""<b>1. Translation (Переклад):</b><br>
 {card_data.get('translation', 'N/A')}<br><br>
-
 <b>2. Part of Speech (Частина мови):</b><br>
 {card_data.get('part_of_speech', 'N/A')}<br><br>
-
 <b>3. Pronunciation (Вимова):</b><br>
 {card_data.get('pronunciation', 'N/A')}<br><br>
-
 <b>4. Explanation (Пояснення):</b><br>
 {explanation_section}<br>
-
 <b>5. Examples (Приклади):</b><br>
 {examples_section}"""
 
