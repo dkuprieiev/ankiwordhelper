@@ -3,6 +3,7 @@
 from pydantic_settings import BaseSettings
 from pydantic import Field
 import logging
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -10,6 +11,12 @@ class Settings(BaseSettings):
 
     # Telegram
     telegram_bot_token: str = Field(..., env='TELEGRAM_BOT_TOKEN')
+
+    # Security
+    auth_code: str = Field(..., env='AUTH_CODE')  # Required authentication code
+    authorized_user_id: Optional[int] = Field(None, env='AUTHORIZED_USER_ID')  # Pre-authorized user
+    enable_security_logs: bool = Field(True, env='ENABLE_SECURITY_LOGS')
+    max_auth_attempts: int = Field(3, env='MAX_AUTH_ATTEMPTS')
 
     # Ollama
     ollama_url: str = Field('http://localhost:11434/api/generate', env='OLLAMA_URL')
